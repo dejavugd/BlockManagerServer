@@ -1,0 +1,80 @@
+<div class="header">
+    <div class="header-second">
+        <h2 class="title">Файлы</h2>
+        <button class="btn-add btn" onclick="openAddModal()">Создать файл</button>
+    </div>
+</div>
+<div class="main-content">
+    <div class="content">
+        <div class="content-wrapper">
+            <div class="file-manager">
+                <div class="file-manager-header">
+                    <div class="card file-list">
+                        {% for file in files["files"] %}
+                            <a class="file-card" href="{{ url_for('dashboard', p='json', json=file.filename) }}">
+                                <div class="icon-container">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file ">
+                                        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                                        <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                                    </svg>
+                                </div>
+                                <div class="file-info">
+                                    <div class="file-name">{{ file.filename }}</div>
+                                    <div class="file-ext">{{ file.filename.split(".")[-1] }}</div>
+                                </div>
+                                <div class="actions">
+                                    <!-- <button class="action-button" onclick="handleRedirect('{{ url_for('dashboard', p='json', json=file.filename) }}')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link ">
+                                            <path d="M15 3h6v6"></path>
+                                            <path d="M10 14 21 3"></path>
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        </svg>
+                                    </button> -->
+                                    <button class="action-button delete" onclick="openDeleteModal('{{file.filename}}')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link ">
+                                            <path d="M3 6h18"></path>
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                            <line x1="10" x2="10" y1="11" y2="17"></line>
+                                            <line x1="14" x2="14" y1="11" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.action-button').forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            const fileCard = this.closest('.file-card');
+            fileCard.classList.add('disable-link');
+        });
+
+        button.addEventListener('mouseleave', function() {
+            const fileCard = this.closest('.file-card');
+            fileCard.classList.remove('disable-link');
+        });
+    });
+
+    document.querySelectorAll('.file-card').forEach(card => {
+        card.addEventListener('click', function(event) {
+            if (this.classList.contains('disable-link')) {
+                event.preventDefault(); // Предотвращает переход по ссылке
+            }
+        });
+    });
+    function handleRedirect(url) {
+        // Дополнительные действия перед переходом
+        console.log('Переход по URL:', url);
+        window.location.href = url;
+    }
+</script>
+
+{% include 'models/delete_json.html' %}
+{% include 'models/add_json.html' %}

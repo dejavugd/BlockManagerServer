@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-form-container">
+    <div class="logo">
+        <span>BlockManager</span>
+    </div>
+    <div class="card form-card">
+        <h1 class="title">
+            {% if first_account == True %}
+                Создание первого аккаунта
+            {% else %}
+                Вход в аккаунт
+            {% endif %}
+        </h1>
+        {% if error %}<div class="error-message">Неверное имя пользователя или пароль</div>{% endif %}
+        <form class="form" action="{{ url_for('login') }}" method="post">
+            <div class="input-container">
+                <label class="label">Имя пользователя</label>
+                <div class="input-wrapper">
+                    <span class="icon-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                    <input class="form-input" placeholder="Имя пользователя" name="login" id="login" required>
+                </div>
+            </div>
+            <div class="input-container">
+                <label class="label">Пароль</label>
+                <div class="input-wrapper">
+                    <span class="icon-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                    <input class="form-input" type="password" name="pass" id="password" placeholder="Пароль" required>
+                </div>
+            </div>
+            <button class="submit-button" type="submit">{% if first_account %}Создать аккаунт{% else %}Войти{% endif %}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

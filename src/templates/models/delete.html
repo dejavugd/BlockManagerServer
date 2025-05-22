@@ -1,0 +1,83 @@
+<div class="modal-overlay" id="delete-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Удалить файл?</h2>
+            <button class="action-button" onclick="closeDeleteModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x ">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-content">
+            <div class="delete-modal">
+                <div class="warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle ">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                        <path d="M12 9v4"></path><path d="M12 17h.01"></path>
+                    </svg>
+                    <div class="warning-text">
+                        Вы уверены что хотите удалить <span id="file-name"></span>? Данное действие нельзя будет отменить.
+                    </div>
+                </div>
+                <div class="actions" style="opacity: 1;">
+                    <input type="hidden" id="json">
+                    <input type="hidden" id="file">
+                    <button class="action-button" onclick="closeDeleteModal()">Отменить</button>
+                    <button class="action-button delete" onclick="confirmDelete()">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Открытие модального окна удаления
+    function openDeleteModal(programName, jsonFile) {
+        programToDelete = programName;
+        jsonFileToDeleteFrom = jsonFile;
+        document.getElementById('file-name').textContent = 
+            `${programName}`;
+        document.getElementById('delete-modal').style.display = 'flex';
+        document.getElementById('json').value = jsonFile;
+        document.getElementById('file').value = programName;
+    }
+
+    // Открытие модального окна удаления
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').style.display = 'none';
+    }
+
+    // Подтверждение удаления
+    function confirmDelete() {
+        programName = document.getElementById('file').value;
+        json = document.getElementById('json').value;
+        if (!programName || !json) {
+            alert('Ошибка: данные для удаления не найдены');
+            return;
+        }
+
+        fetch('/delete_program', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                filename: json,
+                program_name: programName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeDeleteModal();
+                location.reload(); // Обновляем страницу
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении программы');
+        });
+    }
+</script>

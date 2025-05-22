@@ -1,0 +1,162 @@
+<div class="modal-overlay" id="add-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Добавление json</h2>
+            <button class="action-button" onclick="closeAddModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-content">
+            <div id="drop-area" class="delete-modal">
+                <div class="add-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file ">
+                        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                        <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                    </svg>
+                    <div class="text">
+                        Введите название json
+                    </div>
+                </div>
+                
+                <div class="user-input-fields">
+                    <div class="input-group">
+                        <label for="jsonname-input">Название:</label>
+                        <input type="text" id="jsonname-input" placeholder="Введите название json">
+                    </div>
+                </div>
+                
+                <div class="actions" style="opacity: 1;">
+                    <button class="action-button" onclick="closeAddModal()">Отменить</button>
+                    <button id="confirm-add-btn" class="action-button delete" onclick="addNewJson()">Добавить json</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-input-fields {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgb(255 255 255 / 30%);
+    color: white;
+    background-color: rgb(111 111 111 / 10%);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.input-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    background-color: rgba(111, 111, 111, 0.1);
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+    transition: all 0.3s ease;
+}
+
+/* Стили для выпадающего списка */
+.input-group select option {
+    background-color: #2a2a2a;
+    color: white;
+    padding: 8px;
+}
+
+/* Состояния */
+.input-group select:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.input-group select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+</style>
+
+<script>
+// Функция для открытия модального окна
+function openAddModal() {
+    // Очищаем поля формы
+    document.getElementById('jsonname-input').value = '';
+    
+    // Показываем модальное окно
+    document.getElementById('add-modal').style.display = 'flex';
+}
+
+
+function closeAddModal() {
+    document.getElementById('add-modal').style.display = 'none';
+}
+
+function addNewJson() {
+    let jsonname = document.getElementById('jsonname-input').value.trim();
+    
+    // Проверяем, что название не пустое
+    if (!jsonname) {
+        alert('Название файла обязательно к заполнению');
+        return;
+    }
+    
+    // Добавляем расширение .json если его нет
+    if (!jsonname.endsWith('.json')) {
+        jsonname += '.json';
+    }
+
+    fetch("/add_json", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            json: jsonname
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Показываем уведомление об успехе
+            alert(`Файл ${jsonname} успешно создан`);
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при создании json файла: ' + 
+              (error.error || error.message || 'Неизвестная ошибка'));
+    })
+    .finally(() => {
+        closeAddModal();
+    });
+}
+</script>

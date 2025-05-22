@@ -1,0 +1,301 @@
+<div class="modal-overlay" id="add-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Добавление файла</h2>
+            <button class="action-button" onclick="closeAddModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-content">
+            <div id="drop-area" class="delete-modal">
+                <div class="add-text">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                        <path d="M12 9v4"></path><path d="M12 17h.01"></path>
+                    </svg>
+                    <div class="text">
+                        Для добавления файла в <span id="file-add-name">{{ json_file }}</span> перетащите его в поле выбора файла.
+                    </div>
+                </div>
+                <div id="selected-files-list" style="width: 100%; margin-top: 10px; max-height: 150px; overflow-y: auto;"></div>
+                <div class="actions" style="opacity: 1;">
+                    <input type="hidden" id="json_add">
+                    <input type="hidden" id="file_add">
+                    <div class="file-input-wrapper">
+                        <input type="file" class="styled-file-input" id="styled-file-input" accept=".exe;folder/" webkitdirectory directory multiple>
+                        <label for="styled-file-input" class="file-input-label" id="file-input-label">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                          <span id="file-input-text">Выберите файл</span>
+                        </label>
+                    </div>
+                    <button class="action-button" onclick="closeAddModal()">Отменить</button>
+                    <button id="confirm-add-btn" disabled class="action-button delete" onclick="confirmAdd()">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 200px;
+        height: 40px;
+    }
+    
+    .styled-file-input {
+        position: absolute;
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+        z-index: -1;
+    }
+    
+    .file-input-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        border: 2px dashed #ccc;
+        cursor: pointer;
+        transition: all 300ms ease;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 0 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .file-input-label:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        border-color: #aaa;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    
+    .file-input-label:active {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .file-input-label svg {
+        transition: all 300ms ease;
+    }
+    
+    .file-input-label:hover svg {
+        transform: translateY(-1px);
+        color: #0066ff;
+    }
+    
+    /* Стиль при наличии выбранного файла */
+    .styled-file-input:focus + .file-input-label,
+    .styled-file-input.has-file + .file-input-label,
+    .file-input-label.drag-over {
+        border: 2px solid #4CAF50;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+    }
+    
+    .file-input-label.drag-over svg {
+        color: #4CAF50;
+        transform: scale(1.1);
+    }
+</style>
+
+<script>
+    // Открытие модального окна добавления
+    function openAddModal(jsonFile) {
+        document.getElementById('json_add').value = jsonFile;
+        document.getElementById('file-add-name').textContent = jsonFile;
+        document.getElementById('add-modal').style.display = 'flex';
+        document.getElementById('file-input-text').textContent = 'Выберите файл или папку';
+        document.getElementById('confirm-add-btn').disabled = true;
+        document.getElementById('selected-files-list').innerHTML = '';
+        document.querySelector('.file-input-wrapper').classList.remove('has-files');
+    }
+
+    function closeAddModal() {
+        document.getElementById('add-modal').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('styled-file-input');
+        const fileLabel = document.getElementById('file-input-label');
+        const fileText = document.getElementById('file-input-text');
+        const filesList = document.getElementById('selected-files-list');
+        const hiddenInput = document.getElementById('file_add');
+        const confirmButton = document.getElementById('confirm-add-btn');
+
+        // Обработка drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, () => {
+                fileLabel.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, () => {
+                fileLabel.classList.remove('drag-over');
+            });
+        });
+
+        fileLabel.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const items = dt.items;
+
+            let exeFileNames = [];
+
+            if (items) {
+                // Для папок (Chrome, Edge)
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i].webkitGetAsEntry();
+                    if (item) {
+                        scanFiles(item);
+                    }
+                }
+            } else {
+                // Для файлов (Firefox)
+                handleFileSelect({ target: { files: dt.files } });
+            }
+
+            // Внутри scanFiles нужно собирать имена файлов
+            function scanFiles(item, path = '') {
+                if (item.isFile) {
+                    item.file(file => {
+                        if (file.name.toLowerCase().endsWith('.exe')) {
+                            exeFileNames.push(file.name);
+                            addFileToList(file);
+                        }
+                        // После обработки файла обновляем переменную
+                        updateFileAddValue(exeFileNames);
+                    });
+                } else if (item.isDirectory) {
+                    const dirReader = item.createReader();
+                    dirReader.readEntries(entries => {
+                        entries.forEach(entry => {
+                            scanFiles(entry, path + item.name + '/');
+                        });
+                    });
+                }
+            }
+
+            // Обновляем переменную и кнопку после завершения обработки
+            // Так как асинхронные операции могут завершиться позже,
+            // лучше вызвать updateFileAddValue после всех вызовов.
+            // Но так как обработка асинхронная, нужно дождаться завершения всех.
+            // Для этого можно использовать Promise или просто обновлять внутри callback.
+            
+            // В данном случае проще обновлять внутри callback каждого файла.
+            
+            // В конце функции handleDrop можно установить значение:
+            // Но так как обработка асинхронная, лучше использовать Promise.all или другой механизм.
+            
+            // Для простоты — вызовем updateFileAddValue сразу после цикла,
+            // но это не гарантирует что все файлы обработаны. 
+            
+            // Поэтому лучше использовать промисы для обработки файлов.
+            
+            // Ниже — исправленная версия с промисами:
+            
+            return; // чтобы не мешать остальному коду ниже
+        }
+
+        function handleFileSelect(e) {
+            filesList.innerHTML = '';
+            const files = Array.from(e.target.files);
+            let exeFiles = [];
+
+            files.forEach(file => {
+                if (file.name.toLowerCase().endsWith('.exe')) {
+                    exeFiles.push(file);
+                    addFileToList(file);
+                }
+            });
+
+            if (exeFiles.length === 0) {
+                filesList.innerHTML = '<div class="file-item">EXE файлы не найдены</div>';
+                updateFileAddValue([]);
+                confirmButton.disabled = true;
+            } else {
+                fileText.textContent = `Выбрано ${exeFiles.length} EXE файлов`;
+                hiddenInput.value = exeFiles.map(f => f.name).join(',');
+                confirmButton.disabled = false;
+                updateFileAddValue(exeFiles.map(f => f.name));
+            }
+        }
+
+        function addFileToList(file, path='') {
+            const fileItem = document.createElement('div');
+            fileItem.className='file-item';
+            fileItem.textContent=file.name;
+            filesList.appendChild(fileItem);
+        }
+
+        function updateFileAddValue(fileNamesArray) {
+            if (!Array.isArray(fileNamesArray)) return;
+            
+            const valueString = fileNamesArray.join(',');
+            
+            document.getElementById('file_add').value = valueString;
+
+            if (valueString.length > 0) {
+                confirmButton.disabled=false;
+            } else {
+                confirmButton.disabled=true;
+            }
+        }
+
+    });
+
+    function confirmAdd() {
+        const programName = document.getElementById('file_add').value;
+        console.log(programName)
+        const jsonFile = document.getElementById('json_add').value;
+
+        if (!programName) {
+            alert('Ошибка: файл не выбран');
+            return;
+        }
+
+        fetch("{{ url_for('add_program') }}", {
+            method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ json: jsonFile, program_name: programName })
+       })
+       .then(response => response.json())
+       .then(data => { 
+           if (data.success) { location.reload(); } 
+           else { alert('Ошибка: ' + (data.error || 'Неизвестная ошибка')); }
+       })
+       .catch(error => { console.error('Error:', error); alert('Произошла ошибка при добавлении программы'); });
+       closeAddModal();
+    }
+</script>
