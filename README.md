@@ -1,4 +1,4 @@
-# BlockManager - Панель управления списком контроля программ 🛡️
+# BlockManager Server - Панель управления списком контроля программ 🛡️
 
 <div align="center">
   <img src="https://img.shields.io/badge/Version-1.0.0-blue" alt="Version">
